@@ -219,18 +219,28 @@ def	plotBins():
 	fullData.sort()
 	length = len(fullData)
 	
-	print("Min",fullData[0],"Max",fullData[length-1])
-	print("Median","%5.2f"%fullData[int(length/2)])
-	print("Mean","%5.2f"% (sum(fullData)/length) )
 	for i in range(32):
 		xlow = 512 + 20 + i*14+1
-		xhigh = 512 + 20 + (i+1)*14 -1
+		xhigh = 512 + 20 + (i+1)*14+1
 		ylow = 384 - 50 - bins[i] / 2 
 		yhigh = 384 - 50
 		temp = min_temp + (i -1) /30.0 * (max_temp - min_temp)
 		col = getColour( temp )[0]
-		c.create_rectangle(xlow,ylow,xhigh,yhigh,fill=col,width=1,tag=currentTag)
-		textID = c.create_text(xlow,yhigh+30,text="%4.1f"%temp,angle=270,anchor="se",tag=currentTag)
+		if bins[i]>0:
+			c.create_rectangle(xlow,ylow,xhigh,yhigh,fill=col,width=1,tag=currentTag)
+		else:
+			c.create_line(xlow,ylow,xhigh,ylow,width=1,tag=currentTag)
+		if i>0:
+			c.create_text(xlow,yhigh+30,text="%4.1f"%temp,angle=270,anchor="se",tag=currentTag)
+	
+	c.create_text(522,20,anchor="sw",tag=currentTag,text="Min      %6.2f   Max %6.2f"%(fullData[0],fullData[length-1]))
+	c.create_text(522,40,anchor="sw",tag=currentTag,text="Mean    %5.2f"%  (sum(fullData)/length) )
+	c.create_text(522,60,anchor="sw",tag=currentTag,text="Median %5.2f"%fullData[int(length/2)] )
+	c.create_text(522,80,anchor="sw",tag=currentTag,text="IQR        %5.2f,  %5.2f "%(fullData[int(length/4)],fullData[int(3*length/4)]) )
+
+	print("Min",fullData[0],"Max",fullData[length-1])
+	print("Median","%5.2f"%fullData[int(length/2)])
+	print("Mean","%5.2f"% (sum(fullData)/length) )
 
 # establish connection with server
 def setupClient():
