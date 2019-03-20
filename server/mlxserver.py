@@ -6,64 +6,72 @@
 # Taken from: https://people.csail.mit.edu/albert/bluez-intro/c212.html
 
 import bluetooth
-import sys,struct,time
-sys.path.insert(0, "/home/pi/mlx90640-library-master/python/build/lib.linux-armv7l-2.7")
+import sys,time
 
+# assumes the https://github.com/pimoroni/mlx90640-library is installed in the pi home directory 
+sys.path.insert(0, "/home/pi/mlx90640-library-master/python/build/lib.linux-armv7l-2.7")
 import MLX90640 as mlx
 
-yogaMac = 'B0:FC:36:D0:2F:E0'
 client_sock = ''
 server_sock = ''
+frameNo=0;
 
+# setup bluetooth socket
 def setupSocketServer():
   global client_sock, server_sock, port, address
   print "seting up socket"
   server_sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
-  
   port = 1
   server_sock.bind(("",port))
 
+# listen on bluetooth socket
 def listernSocket():
   global client_sock, server_sock, port, address
   server_sock.listen(1)
-  
   client_sock,address = server_sock.accept()
   print "Accepted connection from " + str(address)
-  
 
+# close bluetooth socket
 def closeSocket():
   global client_sock, server_sock, port, address
   client_sock.close()
   server_sock.close()
-  
+
+# code not used on server
 def sendMessageTo(targetBluetoothMacAddress):
   port = 1
   sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
   sock.connect((targetBluetoothMacAddress, port))
   sock.send("hello!!")
   sock.close()
-  
+
+# code not used on server
 def lookUpNearbyBluetoothDevices():
   nearby_devices = bluetooth.discover_devices()
   for bdaddr in nearby_devices:
     print str(bluetooth.lookup_name( bdaddr )) + " [" + str(bdaddr) + "]"
-    
+
+# Setup the MLX device
 def setupMLX():    
   global mlx
   mlx.setup(16)
 
-frameNo=0;
-
+# Read a frame from the mlx sensor and send it down the socket
+# each pixel is first converted to a 2-byte short int by multiply temperature
+# value by 100. This looses some of the top end of the servers range which
+# is effectively -327.68 to 327.67.
+# The bytes are send in two blocks of 16*24 pixels, so each block is 768 bytes
+# This seems to be a size which can be written in one chunk at a time 
+# so the client can read a specific number of bytes
 def readAndSendFrame():
     global mlx,server_sock
     t0 = time.clock()*1000
     frame = mlx.get_frame()
     t1 = time.clock()*1000
-    v_min = min(frame)
-    v_max = max(frame)
-    print("min %.1f max %.1f" % (v_min,v_max),"frame",int(t1-t0))
+    #v_min = min(frame)
+    #v_max = max(frame)
+    #print("min %.1f max %.1f" % (v_min,v_max),"frame",int(t1-t0))
     ss=""
-#    client_sock.send("B")
     for xh in range(0,32,16):
         t2 = time.clock()*1000
         ba = bytearray()
@@ -71,20 +79,17 @@ def readAndSendFrame():
             x = xh + xl
             for y in range(24):
                 val = frame[32*(23-y) + x]
-#            s = "D {:2d} {:2d} {:3.1f}".format(x,y,val)
-                s = "%4.1f" % val
-                ss = ss + s
                 sh = int(val*100)
                 if sh>32767: sh = 32767
                 if sh<-32768: sh = -32768
                 ba.extend(struct.pack("h",sh))
-       # print ss
         t3 = time.clock()*1000
         client_sock.send(bytes(ba))
         t4 = time.clock()*1000
-        print("build data",int(t3-t2),"send",int(t4-t3))
+        #print("build data",int(t3-t2),"send",int(t4-t3))
 
-
+# The main loop waits for some data from the client, which is ignored.
+# It then sends a frame of data
 def mainLoop():
     global client_sock, server_sock, port, address
     try:
