@@ -10,3 +10,7 @@ the library needs to be compiled together with the python subdirectory.
 
 The server can be made to launch at boot time using the mlxlauncher.sh script. The following crontab line should work
 @reboot sh /home/pi/mlx90640-bluetooth/server/mlxlauncher.sh >> /home/pi/mlx90640-bluetooth/server/launcher.log 2>&1
+
+The client needs some setup. The MAC address for the pi is hard coded in the client code.
+
+
