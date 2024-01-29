@@ -14,4 +14,7 @@ The server can be made to launch at boot time using the `mlxlauncher.sh` script.
 
 The client needs some setup. The MAC address for the pi is hard coded in the client code `client/mlxclient.py`.
 
-
+The client library relies on pybluez2 https://github.com/airgproducts/pybluez2/tree/master. Things seem to work better installing from source using
+```
+pip install git+https://github.com/airgproducts/pybluez2.git@0.46
+```
