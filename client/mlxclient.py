@@ -247,7 +247,7 @@ def setupClient():
 	global sock,port
 	print("setting up client")
 	port = 1
-	sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
+	sock = bluetooth.BluetoothSocket() # bluetooth.RFCOMM)
 	sock.connect((piMac, port))
 	print("connected")
 
