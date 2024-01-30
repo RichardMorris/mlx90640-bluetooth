@@ -39,7 +39,7 @@ def mouseClick(event):
 	mouse_x = event.x
 	mouse_y = event.y
 
-# set bounds for tempreture range
+# set bounds for temperature range
 def setBounds():
 	global min_temp,max_temp,minVar,maxVar
 	min_temp = minVar.get()
@@ -50,7 +50,7 @@ def setupUI():
 	global mw,c,mirrorFlag,tk,sampleValue,minVar,maxVar,min_temp,max_temp
 
 	mw = tk.Tk()
-	mw.title('Thermal sensor')
+	mw.title('infrared camera sensor')
 
 	sampleValue = tk.DoubleVar()
 
@@ -60,7 +60,6 @@ def setupUI():
 	maxVar = tk.DoubleVar()
 	maxVar.set(max_temp)
 	mirrorFlag = tk.BooleanVar()
-
 
 	c = tk.Canvas(mw,width=1024,height=384)
 	c.pack(side=tk.TOP,fill=tk.BOTH,expand=1)
@@ -110,25 +109,6 @@ def getColour(val):
 	ir = int((( (color[idx2][0] - color[idx1][0]) * fractBetween) + color[idx1][0]) * 255.0);
 	ig = int((( (color[idx2][1] - color[idx1][1]) * fractBetween) + color[idx1][1]) * 255.0);
 	ib = int((( (color[idx2][2] - color[idx1][2]) * fractBetween) + color[idx1][2]) * 255.0);
-
-#	if val <= 0:
-#		ir = 0; ig = 0; ib = 0
-#	elif val <= 7:
-#		ir = 0; ig = 0; ib = 255
-#	elif val <= 15:
-#		ir = 0; ig = 255; ib = 0
-#	elif val <= 23:
-#		ir = 64; ig = 130; ib = 0
-#	elif val <= 27.5:
-#		ir = 127; ig = 127; ib = 0
-#	elif val <= 33:
-#		ir = 150; ig = 62; ib = 0
-#	elif val <= 35:
-#		ir = 255; ig = 0; ib = 0
-#	elif val <= 40:
-#		ir = 255; ig = 255; ib = 0
-#	else:
-#		ir = 255; ig = 255; ib = 255
 
 	col = "#%02x%02x%02x" % (ir,ig,ib)
 	return (col,ir,ig,ib)
@@ -238,9 +218,9 @@ def	plotBins():
 	c.create_text(522,60,anchor="sw",tag=currentTag,text="Median %5.2f"%fullData[int(length/2)] )
 	c.create_text(522,80,anchor="sw",tag=currentTag,text="IQR        %5.2f,  %5.2f "%(fullData[int(length/4)],fullData[int(3*length/4)]) )
 
-	print("Min",fullData[0],"Max",fullData[length-1])
-	print("Median","%5.2f"%fullData[int(length/2)])
-	print("Mean","%5.2f"% (sum(fullData)/length) )
+	# print("Min",fullData[0],"Max",fullData[length-1])
+	# print("Median","%5.2f"%fullData[int(length/2)])
+	# print("Mean","%5.2f"% (sum(fullData)/length) )
 
 # establish connection with server
 def setupClient():
@@ -251,7 +231,7 @@ def setupClient():
 	sock.connect((piMac, port))
 	print("connected")
 
-# close conection with server and exit
+# close connection with server and exit
 def shutdown():
 	sock.close()
 	sys.exit()
@@ -269,7 +249,7 @@ def drawFrame():
 	currentTag = "page" + str(pageNo)
 	
 	#print("sending request to server")
-	sock.send("hello")
+	sock.send("hello".encode())
 	#print("request sent to server")
 	clearBins()
 	readPixels()
