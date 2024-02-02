@@ -12,7 +12,7 @@ Depends on:
 
 ## Server setup
 The server code depends on the mlx90640-library being installed in the `/home/pi` directory. 
-The library needs to be compiled together with the Python sub-directory. 
+The library needs to be compiled together with the Python sub-directory. It run with a version circa 2019 and not been tested since.
 
 The server program is `server/mlxserver.py` which needs to be run as root
 
@@ -47,13 +47,12 @@ To run the client
 
 If Bluetooth connection is established then the user interface, with the image from the sensor is displayed, together with some statistics and a histogram of colours.
 The temperature of a particular pixel can be sampled by clicking on the pixel. The colour scale can be adjusted by setting the min and max values and pressing the set
-value. Clicking the mirror button flips the image horizontally so it appears like a mirror. To stop the client nicely and shutdown the socket use the quit button.
+button. Clicking the mirror button flips the image horizontally so it appears like a mirror. To stop the client nicely and shutdown the socket use the quit button.
 
-Communication can be a bit buggy and the client can sometimes hangup. It may be necessary to reboot the Pi and possibly the PC to reestablish communication.   
-
+Communication can be a bit buggy and the client can sometimes hang-up. It may be necessary to reboot the Pi and possibly the PC to reestablish communication.   
 
 
 ## Versions
 
-0.1 2019/20/3 - initial release, worked with older versions of pybluez 
-0.2 2024/1/30 - works with pybluez2 version 0.46
+* 0.1 2019/20/3 - initial release, worked with older versions of pybluez 
+* 0.2 2024/1/30 - works with pybluez2 version 0.46
