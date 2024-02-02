@@ -2,6 +2,7 @@ import sys,math,time,struct
 import tkinter as tk
 import bluetooth,socket
 import time
+from datetime import datetime
 
 # mac address for server
 piMac = 'B8:27:EB:B1:D2:E5'
@@ -9,6 +10,8 @@ piMac = 'B8:27:EB:B1:D2:E5'
 # number of pixels per sensor pixel
 IMAGE_SCALE=16
 
+# Size of data block
+BLOCK_SIZE=24*16*2
 # colours for interpolation
 NUM_COLORS = 7
 color = [ [0,0,0], [0,0,1], [0,1,0], [1,1,0], [1,0,0], [1,0,1], [1,1,1]]
@@ -20,7 +23,7 @@ max_temp = 50.0
 # bins for recording histogram
 bins = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
 
-# mouse coordinated for pixel sampeling
+# mouse coordinated for pixel sampling
 mouse_x = -1
 mouse_y = -1
 
@@ -91,6 +94,7 @@ def setupUI():
 
 # Find the colour for a specific value
 # Heatmap code borrowed from: http://www.andrewnoske.com/wiki/Code_-_heatmaps_and_color_gradients
+# Returns the tuple ( hex value for colour in format #ff00ff, red int value, green int value, blue int value) 
 def getColour(val):
 	fractBetween = 0;
 	vmin = min_temp;
@@ -140,13 +144,13 @@ def readPixels():
 	
 	for xh in range(0,32,16):
 		t2 =  time.perf_counter_ns()
-		instr = sock.recv(4*24*8)
+		instr = sock.recv(BLOCK_SIZE)
 		t3 =  time.perf_counter_ns()
-		
-		if(len(instr) != 4*24*8):
+
+		if(len(instr) != BLOCK_SIZE):
 			print("bad length for data",len(instr))
 			return
-					
+		print(datetime.utcnow().strftime('%T.%f')[:-3],"Read pixels")	
 		ba = bytearray(instr)
 		it = struct.iter_unpack("h",ba)
 		pos = 0
@@ -212,23 +216,19 @@ def	plotBins():
 			c.create_line(xlow,ylow,xhigh,ylow,width=1,tag=currentTag)
 		if i>0:
 			c.create_text(xlow,yhigh+30,text="%4.1f"%temp,angle=270,anchor="se",tag=currentTag)
-	
-	c.create_text(522,20,anchor="sw",tag=currentTag,text="Min      %6.2f   Max %6.2f"%(fullData[0],fullData[length-1]))
-	c.create_text(522,40,anchor="sw",tag=currentTag,text="Mean    %5.2f"%  (sum(fullData)/length) )
-	c.create_text(522,60,anchor="sw",tag=currentTag,text="Median %5.2f"%fullData[int(length/2)] )
-	c.create_text(522,80,anchor="sw",tag=currentTag,text="IQR        %5.2f,  %5.2f "%(fullData[int(length/4)],fullData[int(3*length/4)]) )
-
-	# print("Min",fullData[0],"Max",fullData[length-1])
-	# print("Median","%5.2f"%fullData[int(length/2)])
-	# print("Mean","%5.2f"% (sum(fullData)/length) )
+	if length>=2:
+		c.create_text(522,20,anchor="sw",tag=currentTag,text="Min      %6.2f   Max %6.2f"%(fullData[0],fullData[length-1]))
+		c.create_text(522,40,anchor="sw",tag=currentTag,text="Mean    %5.2f"%  (sum(fullData)/length) )
+		c.create_text(522,60,anchor="sw",tag=currentTag,text="Median %5.2f"%fullData[int(length/2)] )
+		c.create_text(522,80,anchor="sw",tag=currentTag,text="IQR        %5.2f,  %5.2f "%(fullData[int(length/4)],fullData[int(3*length/4)]) )
 
 # establish connection with server
 def setupClient():
-	global sock,port
+	global sock,channel
 	print("setting up client")
-	port = 1
+	channel = 1
 	sock = bluetooth.BluetoothSocket() # bluetooth.RFCOMM)
-	sock.connect((piMac, port))
+	sock.connect((piMac, channel))
 	print("connected")
 
 # close connection with server and exit

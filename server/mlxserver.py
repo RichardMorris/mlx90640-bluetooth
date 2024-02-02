@@ -12,49 +12,35 @@ import sys,time
 sys.path.insert(0, "/home/pi/mlx90640-library-master/python/build/lib.linux-armv7l-2.7")
 import MLX90640 as mlx
 
-client_sock = ''
+client_sock = '' 
 server_sock = ''
 frameNo=0;
 
-# setup bluetooth socket
+# setup Bluetooth socket
 def setupSocketServer():
-  global client_sock, server_sock, port, address
-  print "seting up socket"
+  global client_sock, server_sock, channel, address
+  print( "Setting up socket")
   server_sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
-  port = 1
-  server_sock.bind(("",port))
+  channel = 1
+  server_sock.bind(("",channel))
 
-# listen on bluetooth socket
+# listen on Bluetooth socket
 def listernSocket():
-  global client_sock, server_sock, port, address
+  global client_sock, server_sock, channel, address
   server_sock.listen(1)
   client_sock,address = server_sock.accept()
-  print "Accepted connection from " + str(address)
+  print ("Accepted connection from " + str(address))
 
-# close bluetooth socket
+# close Bluetooth socket
 def closeSocket():
-  global client_sock, server_sock, port, address
+  global client_sock, server_sock, channel, address
   client_sock.close()
   server_sock.close()
-
-# code not used on server
-def sendMessageTo(targetBluetoothMacAddress):
-  port = 1
-  sock=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
-  sock.connect((targetBluetoothMacAddress, port))
-  sock.send("hello!!")
-  sock.close()
-
-# code not used on server
-def lookUpNearbyBluetoothDevices():
-  nearby_devices = bluetooth.discover_devices()
-  for bdaddr in nearby_devices:
-    print str(bluetooth.lookup_name( bdaddr )) + " [" + str(bdaddr) + "]"
 
 # Setup the MLX device
 def setupMLX():    
   global mlx
-  mlx.setup(16)
+  mlx.setup(16) # Parameter is the fps, either 1, 2, 4, 8, 16, 32 or 64
 
 # Read a frame from the mlx sensor and send it down the socket
 # each pixel is first converted to a 2-byte short int by multiply temperature
@@ -91,16 +77,16 @@ def readAndSendFrame():
 # The main loop waits for some data from the client, which is ignored.
 # It then sends a frame of data
 def mainLoop():
-    global client_sock, server_sock, port, address
+    global client_sock, server_sock, channel, address
     try:
         while 1:
             data = client_sock.recv(1024)
-            print "Request", data
+            print( "Request", data)
             readAndSendFrame()
     except:
         e = sys.exc_info()
-        print "Error"
-        print e
+        print ("Error")
+        print (e)
         server_sock.close()
         client_sock.close()
         setupSocketServer()
