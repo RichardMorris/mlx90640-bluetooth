@@ -51,7 +51,9 @@ button. Clicking the mirror button flips the image horizontally so it appears li
 
 Communication can be a bit buggy and the client can sometimes hang-up. It may be necessary to reboot the Pi and possibly the PC to reestablish communication.   
 
+## References
 
+'An Introduction to Bluetooth Programming', Albert Huang (2008) https://people.csail.mit.edu/albert/bluez-intro/index.html
 ## Versions
 
 * 0.1 2019/20/3 - initial release, worked with older versions of pybluez 
